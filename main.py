@@ -43,24 +43,23 @@ def get_response(url):
 
 
 def scrape_urls(string):
-    '''Returns a sorted string of urls'''
-    matches = sorted(set(re.findall(
-        (r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|'
+    '''Returns a list of urls'''
+    matches = re.findall(
+        (r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-&(-_@.&+]|[!*\(\),]|'
          r'(?:%[0-9a-fA-F][0-9a-fA-F]))+'), string
-    )))
-    return '\n'.join(matches)
+    )
+    return matches
 
 
 def scrape_partial_urls(lst):
-    '''Given a list of dict objects, returns sorted string of partial urls'''
+    '''Given a list of dict objects, returns list of partial urls'''
     p_urls = []
     for item in lst:
         if item.get('src'):
             p_urls.append(item.get('src'))
         elif item.get('href'):
             p_urls.append(item.get('href'))
-    p_urls = sorted(set(p_urls))
-    return '\n'.join(p_urls)
+    return p_urls
 
 
 def scrape_emails(string):
@@ -74,7 +73,7 @@ def scrape_emails(string):
 def scrape_phonenums(string):
     '''Returns sorted string of phone numbers'''
     matches = re.findall(
-        (r'1?\W*([2-9][0-8][0-9])\W*([2-9][0-9]{2})\W*([0-9]{4})'
+        (r'1?\W*([2-9][0-8][0-9])-([2-9][0-9]{2})-([0-9]{4})'
          r'(\se?x?t?(\d*))?'), string
     )
     digits = map(lambda x: x[0:3], matches)
@@ -110,14 +109,19 @@ def main(args):
         partial_urls = scrape_partial_urls(html_links)
         # Printing all results from parsing, unless there are none to print
         print '\n'
-        print 'URLS:', '\n'
-        print urls if urls else None, '\n'
+        print 'URLS & Partial URLS:', '\n'
+        if urls and partial_urls:
+            print '\n'.join(sorted(list(set(urls) | set(partial_urls)))), '\n'
+        elif urls and not partial_urls:
+            print '\n'.join(sorted(list(set(urls)))), '\n'
+        elif partial_urls and not urls:
+            print '\n'.join(sorted(set(partial_urls))), '\n'
+        else:
+            print None, '\n'
         print 'EMAILS:', '\n'
         print emails if emails else None, '\n'
         print 'PHONE NUMBERS:', '\n'
         print phonenums if phonenums else None, '\n'
-        print 'PARTIAL URLS:', '\n'
-        print partial_urls if partial_urls else None, '\n'
     else:
         parser.print_usage()
         sys.exit(1)
