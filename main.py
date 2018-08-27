@@ -51,6 +51,18 @@ def scrape_urls(string):
     return '\n'.join(matches)
 
 
+def scrape_partial_urls(lst):
+    '''Given a list of dict objects, returns sorted string of partial urls'''
+    p_urls = []
+    for item in lst:
+        if item.get('src'):
+            p_urls.append(item.get('src'))
+        elif item.get('href'):
+            p_urls.append(item.get('href'))
+    p_urls = sorted(set(p_urls))
+    return '\n'.join(p_urls)
+
+
 def scrape_emails(string):
     '''Returns sorted string of emails'''
     matches = sorted(set(re.findall(
@@ -85,14 +97,17 @@ def main(args):
     parsed_args = parser.parse_args(args)
     html_parser = MyHTMLParser()
     if parsed_args.website:
+        # Assigning values from calling HTMLParser
         html = get_response(parsed_args.website)
         html_parser.feed(html)
-        links = html_parser.links
+        html_links = html_parser.links
+        # Assigning values from calling scraping functions
         text = html_parser.container
         urls = scrape_urls(text)
         emails = scrape_emails(text)
         phonenums = scrape_phonenums(text)
-
+        partial_urls = scrape_partial_urls(html_links)
+        # Printing all results from parsing, unless there are none to print
         print '\n'
         print 'URLS:', '\n'
         print urls if urls else None, '\n'
@@ -101,12 +116,7 @@ def main(args):
         print 'PHONE NUMBERS:', '\n'
         print phonenums if phonenums else None, '\n'
         print 'PARTIAL URLS:', '\n'
-        for link in links:
-            if link.get('src'):
-                print link.get('src'), '<--from attr: src'
-            elif link.get('href'):
-                print link.get('href'), '<--from attr: href'
-        print '\n'
+        print partial_urls if partial_urls else None, '\n'
     else:
         parser.print_usage()
         sys.exit(1)
