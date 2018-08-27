@@ -93,6 +93,7 @@ def create_parser():
 
 def main(args):
     '''Parses arguments, calls scrape functions, and prints results'''
+    # Assigning argument parser and html parser
     parser = create_parser()
     parsed_args = parser.parse_args(args)
     html_parser = MyHTMLParser()
